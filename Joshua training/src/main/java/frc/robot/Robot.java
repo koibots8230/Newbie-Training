@@ -33,7 +33,7 @@ public class Robot extends TimedRobot {
   CANSparkMax Intake2;
   CANSparkMax Indexer;
 
-  DigitalInput distanceswitch = new DigitalInput(0);
+  DigitalInput distanceswitch = new DigitalInput(1);
 
 
 
@@ -41,7 +41,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     controller = new XboxController(0);
     motorleft1 = new CANSparkMax(999, MotorType.kBrushless);
-    motorleft2 = new CANSparkMax(999, MotorType.kBrushless);
+    motorleft2 = new CANSparkMax(998, MotorType.kBrushless);
     motorright1 = new CANSparkMax(2, MotorType.kBrushless);
     motorright2 = new CANSparkMax(7, MotorType.kBrushless);
     motorleft2.follow(motorleft1, true);
@@ -96,10 +96,11 @@ public class Robot extends TimedRobot {
     }
     
     distanceswitch.get();
-    if (controller.getAButton()) {
+    System.out.println(distanceswitch.get());
+    if (controller.getAButton() && distanceswitch.get()) {
       Intake1.set(.5);
       Indexer.set(.5);
-    } else if (!distanceswitch.get()){
+    } else if (!distanceswitch.get() || !controller.getAButton()){
       Intake1.set(0);   
       Indexer.set(0);
     }
