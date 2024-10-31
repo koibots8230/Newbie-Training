@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.RobotConstants;
+import frc.robot.commands.MultiSubsystemCommands;
 import frc.robot.subsystems.Template;
 import monologue.Logged;
 import monologue.Monologue;
@@ -35,7 +36,7 @@ public class RobotContainer implements Logged {
   private void configureBindings() {
     Trigger exampleTrigger =
         new Trigger(() -> controller.getLeftTriggerAxis() > RobotConstants.TRIGGER_DEADZONE);
-    exampleTrigger.onTrue(template.exampleFactory());
+    exampleTrigger.onTrue(MultiSubsystemCommands.MultiSubsystemCommand(template));
     exampleTrigger.onFalse(template.exampleFactory());
   }
 
