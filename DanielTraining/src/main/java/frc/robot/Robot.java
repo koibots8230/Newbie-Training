@@ -7,12 +7,18 @@ package frc.robot;
 import javax.lang.model.util.ElementScanner14;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.CAN;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import monologue.Logged;
+import monologue.Monologue;
+import monologue.Annotations.Log;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -20,7 +26,7 @@ import edu.wpi.first.wpilibj.XboxController;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot implements Logged{ 
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -41,35 +47,44 @@ public class Robot extends TimedRobot {
   int stage;
   CANSparkMax Shooter1;
   CANSparkMax Shooter2;
+  @Log double velocity;
+  RelativeEncoder encoder;
+  SparkPIDController pidController;
 
    @Override
   public void robotInit() {
     controller = new XboxController(0);
-    leadLeft = new CANSparkMax(6, MotorType.kBrushless);
-    leadRight = new CANSparkMax(7, MotorType.kBrushless);
-    backLeft = new CANSparkMax(4, MotorType.kBrushless);
-    backRight = new CANSparkMax(2, MotorType.kBrushless);
+    leadLeft = new CANSparkMax(999, MotorType.kBrushless);
+    leadRight = new CANSparkMax(998, MotorType.kBrushless);
+    backLeft = new CANSparkMax(997, MotorType.kBrushless);
+    backRight = new CANSparkMax(996, MotorType.kBrushless);
     leadLeft.setInverted(true);
     leadRight.setInverted(true);
     //backLeft.follow(leadLeft);
     backRight.follow(leadRight);
     intake1 = new CANSparkMax(14, MotorType.kBrushless);
     intake2 = new CANSparkMax(15, MotorType.kBrushless);
-    indexer = new CANSparkMax(9, MotorType.kBrushless);
+    indexer = new CANSparkMax(6, MotorType.kBrushless);
     intake2.follow(intake1);
     DistanceSwitch = new DigitalInput( 1);
-    //indexer.setInverted(true);
+    indexer.setInverted(true);
     System.out.println("RobotInit successfull");
     stage = 1;
-    //Shooter1 = new CANSparkMax(11, MotorType.kBrushless);
-    //Shooter2 = new CANSparkMax(13, MotorType.kBrushless);
-    Shooter1 = leadLeft;
-    Shooter2 = backLeft;
-    indexer = leadRight;
+    Shooter1 = new CANSparkMax(7, MotorType.kBrushless);
+    Shooter2 = new CANSparkMax(995, MotorType.kBrushless);
+  
+    Monologue.setupMonologue(this,"Robot", false, false);
+    encoder = leadLeft.getEncoder();
+
+    pidController.setP(0);
+    pidController.setD(0);
   }
 
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    Monologue.updateAll();
+    velocity = encoder.getVelocity();
+  }
 
   @Override
   public void autonomousInit() {}
@@ -101,6 +116,8 @@ public class Robot extends TimedRobot {
         leadLeft.set(-maximum);
         leadRight.set(difference);
       }
+
+      
     }
     //System.out.println("before If");
     //if (controller.getAButton()){
@@ -151,6 +168,11 @@ public class Robot extends TimedRobot {
       Shooter1.set(0);
       Shooter2.set(0);
       indexer.set(0);
+    }
+    if (controller.getXButton()) {
+      pidController.setReference(2000, ControlType.kVelocity);
+    } else {
+      pidController.setReference(0, ControlType.kVelocity);
     }
   }
     
