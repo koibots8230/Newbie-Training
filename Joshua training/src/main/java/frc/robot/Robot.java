@@ -5,11 +5,16 @@
 package frc.robot;
 
 import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import monologue.Logged;
+import monologue.Annotations.Log;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -17,7 +22,7 @@ import edu.wpi.first.wpilibj.XboxController;
  * the package after creating this project, you must also update the build.gradle file in the
  * project.
  */
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot implements Logged {
 
   XboxController controller;
   CANSparkMax motorleft1;
@@ -33,15 +38,17 @@ public class Robot extends TimedRobot {
   CANSparkMax Intake2;
   CANSparkMax Indexer;
 
-  DigitalInput distanceswitch = new DigitalInput(0);
+  DigitalInput distanceswitch = new DigitalInput(1);
 
-
+ RelativeEncoder encoder;
+ @Log double velocity;
+  SparkPIDController pidco;
 
   @Override
   public void robotInit() {
     controller = new XboxController(0);
     motorleft1 = new CANSparkMax(999, MotorType.kBrushless);
-    motorleft2 = new CANSparkMax(999, MotorType.kBrushless);
+    motorleft2 = new CANSparkMax(998, MotorType.kBrushless);
     motorright1 = new CANSparkMax(2, MotorType.kBrushless);
     motorright2 = new CANSparkMax(7, MotorType.kBrushless);
     motorleft2.follow(motorleft1, true);
@@ -55,10 +62,16 @@ public class Robot extends TimedRobot {
 
     Indexer = new CANSparkMax(6, MotorType.kBrushless);
 
+    encoder = Intake1.getEncoder();
+    pidco = Intake1.getPIDController();
+    pidco.setP(0);
+    pidco.setFF(0);
   }
 
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    velocity = encoder.getVelocity();
+  }
 
   @Override
   public void autonomousInit() {}
@@ -96,12 +109,19 @@ public class Robot extends TimedRobot {
     }
     
     distanceswitch.get();
-    if (controller.getAButton()) {
-      Intake1.set(.5);
+    if (controller.getAButton() && distanceswitch.get()) {
+      //Intake1.set(.5);
       Indexer.set(.5);
-    } else if (!distanceswitch.get()){
-      Intake1.set(0);   
+    } else if (!distanceswitch.get() || !controller.getAButton()){
+      //Intake1.set(0);   
       Indexer.set(0);
+    }
+    if (controller.getXButton()) {
+      pidco.setReference(1000,ControlType.kVelocity);
+
+    }
+    else{
+      pidco.setReference(0,ControlType.kVelocity);
     }
   }
 
