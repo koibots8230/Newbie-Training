@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import edu.wpi.first.epilogue.*;
+
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -14,6 +16,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 
+@Logged
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
  * the TimedRobot documentation. If you change the name of this class or the package after creating
@@ -41,6 +44,8 @@ SparkMax shooter1;
 SparkMax shooter2;
 SparkMax indexer;
 
+SparkMaxConfig tuning;
+
 boolean previouslyDetected = false;
 
 
@@ -50,7 +55,7 @@ boolean previouslyDetected = false;
     rightMotor1 = new SparkMax(4, MotorType.kBrushless);
     rightMotor2 = new SparkMax(8, MotorType.kBrushless);
 
-    shooter1 = new SparkMax(11, MotorType.kBrushless);
+    shooter1 = new SparkMax(51, MotorType.kBrushless);
     shooter2 = new SparkMax(13, MotorType.kBrushless);
     indexer = new SparkMax(9, MotorType.kBrushless);
 
@@ -73,6 +78,12 @@ boolean previouslyDetected = false;
     distanceSwitch = new DigitalInput(1);
 
     distanceSwitch.get();
+
+    tuning.closedLoop.p(0);
+    tuning.closedLoop.velocityFF(0);
+    shooter1.configure(tuning, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    shooter1.getClosedLoopController();
     
   }
 
@@ -121,6 +132,8 @@ boolean previouslyDetected = false;
       shooter2.set(0);
       indexer.set(0);
     }
+
+    Epilogue.bind(this);
   }
 
   @Override
